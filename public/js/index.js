@@ -10,6 +10,7 @@ wifiButton.on('click', function(e){
 });
 
 socket.on('createWifiRoom', function(mac_address){
+  console.log(`mac address: ${mac_address}`);
   var roomTextbox = jQuery('[name=room]');
   roomTextbox.val(mac_address)
 
