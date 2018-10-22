@@ -2,6 +2,10 @@ const path = require('path');
 const http = require('http');
 const express = require('express');
 const socketIO = require('socket.io');
+const network = require('network')
+const {SHA256} = require('crypto-js');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
 const {Users} = require('./utils/users')
 const {generateMessage, generateLocationMessage} = require('./utils/message');
@@ -18,23 +22,39 @@ app.use(express.static(publicPath));
 io.on('connection', (socket) => {
   console.log('New user connected');
 
-
+// room list
   socket.on('join', (params, callback) =>{
     if(!isRealString(params.name) || !isRealString(params.room)){
       return callback('Name and room name are required.');
     }
 
+    var userlist = users.getUserList(params.room)
+    if(userlist.filter((user) => user === params.name).length > 0){
+      return callback('Name is currently taken')
+    }
 
+    params.room = params.room.toUpperCase();
     socket.join(params.room);
     users.removeUser(socket.id);
     users.addUser(socket.id, params.name, params.room);
 
     io.to(params.room).emit('updateUserList', users.getUserList(params.room));
     socket.emit('newMessage', generateMessage('Admin', 'Welcome'));
-    socket.broadcast.to(params.room).emit('newMessage', generateMessage('Admin', `${params.join} has joined`));
+    socket.broadcast.to(params.room).emit('newMessage', generateMessage('Admin', `${params.name} has joined`));
     callback();
   });
 
+  socket.on('createWifiHash', () =>{
+     network.get_interfaces_list(function(err, list) {
+      var mac_address = list[0].mac_address
+      console.log(mac_address);
+      bcrypt.genSalt(10, (err, salt) =>{
+        bcrypt.hash(mac_address, salt, (err, hash) =>{
+                socket.emit('createWifiRoom', hash)
+        });
+      })
+
+})})
 
 
 
