@@ -16,6 +16,7 @@ var app = express();
 var server = http.createServer(app)
 var io = socketIO(server);
 var users = new Users();
+var roomsArray = [];
 
 app.use(express.static(publicPath));
 
@@ -34,6 +35,7 @@ io.on('connection', (socket) => {
     }
 
     params.room = params.room.toUpperCase();
+
     socket.join(params.room);
     users.removeUser(socket.id);
     users.addUser(socket.id, params.name, params.room);
@@ -56,7 +58,18 @@ io.on('connection', (socket) => {
 
 })})
 
-
+  socket.on('roomTextClick',(callback) =>{
+    var temp;
+    roomsArray = [];
+    for(i = 0; i<users.users.length; i++){
+      temp = users.users[i].room
+      if(roomsArray.includes(temp) === false){
+        roomsArray.push(temp);
+      }
+    }
+    callback(roomsArray);
+    console.log(roomsArray);
+  } )
 
   //socket.leave('string')
 
@@ -97,6 +110,7 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () =>{
     console.log('User has disconnected');
     var user = users.removeUser(socket.id);
+
 
     if(user){
       io.to(user.room).emit('updateUserList', users.getUserList(user.room));

@@ -18,8 +18,12 @@
     <label>Display name</label>
     <input type="text" name="name" autofocus autocomplete="off"/></div>
     <div class="form-field">
+
     <label>Room name</label>
-    <input type="text" name="room" autocomplete="off"/></div>
+    <input list= "rooms" type="text" name="room" autocomplete="off"/></div>
+    <datalist id="rooms">
+    </datalist>
+
     <div class="form-field">
     <button>Join</button></div>
     <div class="form-field">
@@ -27,7 +31,6 @@
     </div>
   </form>
   </div>
-
   <script src="/socket.io/socket.io.js"></script>
   <script src="/js/libs/jquery-3.3.1.min.js"></script>
   <script src="/js/index.js"></script>
